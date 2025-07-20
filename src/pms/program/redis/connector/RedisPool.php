@@ -28,7 +28,6 @@ class RedisPool extends Redis
                 $this->pool->put($pdo);
                 $pdo = $this->getRealConn();
             } else {
-                var_dump(2);//TODO
                 $pdo->last_time = time() + ($wait_time);
             }
         }
