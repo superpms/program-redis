@@ -52,21 +52,21 @@ class Redis
     }
 
     public function __call(string $name, array $arguments){
-        $className = '\pms\redis\builder\Redis';
+        $className = '\pms\program\redis\builder\Redis';
         if($this->redis == null){
             $this->redis = $this->connect();
         }
-
         if (class_exists($className)) {
             $class = new \ReflectionClass($className);
             $ins = $class->newInstance($this->redis, $this->prefix);
-            return call_user_func_array([$ins, $name], $arguments);
-        } else {
-            if (!method_exists($this->redis, $name)) {
-                throw new \Exception('Redis 方法不存在');
+            if(method_exists($ins, $name)){
+                return call_user_func_array([$ins, $name], $arguments);
             }
-            return call_user_func_array([$this->redis, $name], $arguments);
         }
+        if (!method_exists($this->redis, $name)) {
+            throw new \Exception('Redis 方法不存在');
+        }
+        return call_user_func_array([$this->redis, $name], $arguments);
     }
 
 

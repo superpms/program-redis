@@ -34,7 +34,8 @@ class RedisPool extends Redis
         return $pdo;
     }
 
-    public function close(){
+    public function close(): void
+    {
         $this->pool->put($this->redis);
         $this->redis = null;
     }
