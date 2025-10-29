@@ -99,7 +99,7 @@ class Redis
      */
     public function scan(string $key, int $length = null): array{
         $key = $this->cacheKey($key);
-        $iterator = -1;
+        $iterator = null;
         $data = [];
         while (true) {
             $keys = $this->handler->scan($iterator, $key);
