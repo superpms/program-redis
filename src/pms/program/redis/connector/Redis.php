@@ -45,6 +45,9 @@ class Redis
         if ($this->config->getDatabase() !== 0) {
             $redis->select($this->config->getDatabase());
         }
+        if($this->config->getPrefix() !== ''){
+            $redis->setOption(\Redis::OPT_PREFIX, $this->config->getPrefix());
+        }
         foreach ($this->config->getOptions() as $key => $value) {
             $redis->setOption($key, $value);
         }
@@ -64,7 +67,7 @@ class Redis
             }
         }
         if (!method_exists($this->redis, $name)) {
-            throw new \Exception('Redis 方法不存在');
+            throw new \Exception('Redis '.$name.' 方法不存在');
         }
         return call_user_func_array([$this->redis, $name], $arguments);
     }

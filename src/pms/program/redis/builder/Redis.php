@@ -22,10 +22,12 @@ class Redis
      */
     public function cacheKey($key): string{
         // 如果传入的名称已存在前缀
-        if (str_starts_with($key, $this->prefix)) {
+        if (!str_starts_with($key, $this->prefix)) {
             return $key;
         }
-        return $this->prefix.$key;
+        // 移除前缀（因为会自动设置）
+        // 仅移除最前面的，不能移除所有
+        return substr($key, strlen($this->prefix));
     }
 
     public function __construct(\Redis $redis, $prefix = "")
