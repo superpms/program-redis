@@ -419,4 +419,15 @@ class Redis
         return $this->handler->hdel($key, $hashKey);
     }
 
+    /**
+     * 订阅频道
+     * @param array $channel
+     * @param callable $callback
+     * @return bool
+     */
+    public function subscribe(array $channel, callable $callback): bool
+    {
+        return $this->handler->subscribe([$channel], $callback);
+    }
+
 }

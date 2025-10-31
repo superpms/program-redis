@@ -5,6 +5,8 @@ namespace pms\program\redis;
 use InvalidArgumentException;
 
 /**
+ * @see \Redis
+ * @mixin  \Redis
  * @method  bool set(string $name, $value, int $expire = 0) 设置缓存
  * @method  mixed get(string $key, $default = null) 获取缓存
  * @method  bool delete(string $key) 删除缓存
