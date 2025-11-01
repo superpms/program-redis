@@ -2,6 +2,7 @@
 
 namespace pms\program\redis\builder;
 
+use Closure;
 use \Redis as handler;
 
 class Redis
@@ -12,21 +13,38 @@ class Redis
      */
     protected string $prefix;
 
-    /**
-     * @var handler redis实例
-     */
-    protected handler $handler;
-
 
     public function getPrefix(string $key = ''): string
     {
         return $this->prefix . $key;
     }
 
-    public function __construct(handler $redis)
+    public function clearPrefix(string $key): string
     {
-        $this->handler = $redis;
+        if(str_starts_with($key, $this->prefix)){
+            return substr($key, strlen($this->prefix));
+        }
+        return $key;
+    }
+
+    public function __construct(
+        /**
+         * @var handler $handler redis实例
+         */
+        protected handler $handler,
+        /**
+         * @var Closure $isolate 在当前redis执行阻塞任务时调用，调用后可将当前redis实例与单例上下文分离,使后续redis操作启用新的redis实例
+         */
+        protected Closure $isolate
+    )
+    {
         $this->prefix = $this->handler->getOption(handler::OPT_PREFIX);
+    }
+
+    protected function isolate(): void
+    {
+        $isolate = $this->isolate;
+        $isolate();
     }
 
     /**
@@ -254,16 +272,42 @@ class Redis
     }
 
 
-    public function subscribe(array $channels,callable $callback): bool
+    /**
+     * 订阅频道
+     * 仅订阅过期:需要包含 'E' 和 'X'
+     * 订阅删除需要包含 'E' 和 'g' (del 属于 generic commands)
+     * @param array $channels
+     * @param callable $callback
+     * @param bool $autoSetNotify
+     * @return bool
+     * @deprecated
+     */
+    public function subscribe(array $channels, callable $callback, bool $autoSetNotify = false): bool
     {
-        $this->handler->setOption(\Redis::OPT_PREFIX, '');
+        $notifyConfig = $this->handler->config('GET', 'notify-keyspace-events');
+        $current = $notifyConfig['notify-keyspace-events'] ?? '';
+        if (empty($current) || !str_contains($current, 'E')) {
+            if ($autoSetNotify) {
+                $this->handler->config('SET', 'notify-keyspace-events', 'Eg');
+            } else {
+                throw new \Exception("当前Redis 为 正确配置 notify-keyspace-events");
+            }
+        }
+        $this->isolate();
+        $this->handler->setOption(handler::OPT_READ_TIMEOUT, -1);
+        $this->handler->setOption(handler::OPT_PREFIX, '');
         return $this->handler->subscribe($channels, $callback);
     }
 
     public function unsubscribe(array $channels): bool
     {
-        $this->handler->setOption(\Redis::OPT_PREFIX, $this->prefix);
+        $this->handler->setOption(handler::OPT_PREFIX, $this->prefix);
         return $this->handler->unsubscribe($channels);
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        return call_user_func_array([$this->handler, $name], $arguments);
     }
 
 

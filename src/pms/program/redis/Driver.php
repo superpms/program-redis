@@ -9,6 +9,7 @@ use InvalidArgumentException;
  * @mixin  \Redis
  * @method \Redis getRedis() 获取当前Redis实例
  * @method  string getPrefix(string $key='') 获取Redis前缀/构建带Redis前缀的缓存名称
+ * @method  string clearPrefix(string $key='') 移除 缓存名称 的 Redis前缀
  * @method  array|false keys(string $pattern) 找所有符合给定模式 pattern 的 key
  * @method  bool set(string $name, $value, int $expire = 0) 设置key
  * @method  mixed get(string $key, $default = null) 获取key

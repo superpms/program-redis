@@ -3,24 +3,25 @@
 namespace pms\program\redis\connector;
 
 use pms\program\redis\RedisConfig;
-use \Redis as handle;
+use \Redis as handler;
 
 class Redis
 {
     public RedisConfig $config;
     protected string $prefix = '';
-    protected ?handle $redis = null;
+    protected ?handler $redis = null;
 
-    public function __construct(array $config){
+    public function __construct(array $config)
+    {
         $this->config = new RedisConfig($config);
     }
 
 
-    protected function connect(): handle
+    protected function connect(): handler
     {
         $this->prefix = $this->config->getPrefix();
         try {
-            $redis = new handle();
+            $redis = new handler();
         } catch (\Throwable $e) {
             throw new \Exception('Redis扩展 未安装');
         }
@@ -35,9 +36,6 @@ class Redis
             $arguments[] = null;
             $arguments[] = $this->config->getRetryInterval();
         }
-        if ($this->config->getReadTimeout() !== 0.0) {
-            $arguments[] = $this->config->getReadTimeout();
-        }
         $redis->connect(...$arguments);
         if ($this->config->getPassword()) {
             $redis->auth($this->config->getPassword());
@@ -45,8 +43,11 @@ class Redis
         if ($this->config->getDatabase() !== 0) {
             $redis->select($this->config->getDatabase());
         }
-        if($this->config->getPrefix() !== ''){
-            $redis->setOption(\Redis::OPT_PREFIX, $this->config->getPrefix());
+        if ($this->config->getPrefix() !== '') {
+            $redis->setOption(handler::OPT_PREFIX, $this->config->getPrefix());
+        }
+        if ($this->config->getReadTimeout() !== 0.0) {
+            $redis->setOption(handler::OPT_READ_TIMEOUT, $this->config->getReadTimeout());
         }
 
         foreach ($this->config->getOptions() as $key => $value) {
@@ -55,31 +56,38 @@ class Redis
         return $redis;
     }
 
-    public function __call(string $name, array $arguments){
+    public function __call(string $name, array $arguments)
+    {
         $className = '\pms\program\redis\builder\Redis';
-        if($this->redis == null){
+        if ($this->redis == null) {
             $this->redis = $this->connect();
         }
         if (class_exists($className)) {
+            $isolate = function () {
+                $this->abandon();
+            };
             $class = new \ReflectionClass($className);
-            $ins = $class->newInstance($this->redis);
-            if(method_exists($ins, $name)){
-                return call_user_func_array([$ins, $name], $arguments);
-            }
+            $ins = $class->newInstance($this->redis,$isolate);
+            return call_user_func_array([$ins, $name], $arguments);
         }
-        if (!method_exists($this->redis, $name)) {
-            throw new \Exception('Redis '.$name.' 方法不存在');
-        }
-        return call_user_func_array([$this->redis, $name], $arguments);
+        throw new \Exception('Redis ' . $name . ' 方法不存在');
+
     }
 
-
-    public function close(){
-        if($this->redis == null){
+    protected function abandon(): void
+    {
+        if ($this->redis == null) {
             return;
         }
-        $this->redis->close();
+        try{
+            $this->redis->close();
+        }catch (\Throwable $e){}
         $this->redis = null;
+    }
+
+    public function close()
+    {
+       $this->abandon();
     }
 
     public function __destruct()
