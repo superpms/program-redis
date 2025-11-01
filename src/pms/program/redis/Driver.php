@@ -9,9 +9,10 @@ use InvalidArgumentException;
  * @mixin  \Redis
  * @method \Redis getRedis() 获取当前Redis实例
  * @method  string getPrefix() 获取Redis前缀
- * @method  bool set(string $name, $value, int $expire = 0) 设置缓存
- * @method  mixed get(string $key, $default = null) 获取缓存
- * @method  bool delete(string $key) 删除缓存
+ * @method  array|false keys(string $pattern) 找所有符合给定模式 pattern 的 key
+ * @method  bool set(string $name, $value, int $expire = 0) 设置key
+ * @method  mixed get(string $key, $default = null) 获取key
+ * @method  bool delete(string $key) 删除key
  * @method  array|false scanX(string $key, int $length = null) 命令用于代替 keys 使用
  * @method  bool|int ttl(string $key) 返回 key 剩余的过期时间
  * @method  array|bool setnx(string $key, $value, int $expire = 0) 在指定的 key 不存在时, 为 key 设置指定的值

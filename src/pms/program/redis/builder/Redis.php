@@ -31,7 +31,7 @@ class Redis
      * 获取当前redis实例
      * @return \Redis
      */
-    public function handler(): \Redis
+    public function getRedis(): \Redis
     {
         return $this->handler;
     }
