@@ -2,6 +2,8 @@
 
 namespace pms\program\redis\builder;
 
+use \Redis as handler;
+
 class Redis
 {
     const autoLock = 'auto-lock:';
@@ -11,20 +13,20 @@ class Redis
     protected string $prefix;
 
     /**
-     * @var \Redis redis实例
+     * @var handler redis实例
      */
-    protected \Redis $handler;
+    protected handler $handler;
 
 
-    public function getPrefix()
+    public function getPrefix(string $key = ''): string
     {
-        return $this->prefix;
+        return $this->prefix . $key;
     }
 
-    public function __construct(\Redis $redis, $prefix = "")
+    public function __construct(handler $redis)
     {
-        $this->prefix = $prefix;
         $this->handler = $redis;
+        $this->prefix = $this->handler->getOption(handler::OPT_PREFIX);
     }
 
     /**
@@ -249,6 +251,19 @@ class Redis
     public function LRangeLen(string $key, int $end): array
     {
         return $this->handler->lRange($key, 0, $end);
+    }
+
+
+    public function subscribe(array $channels,callable $callback): bool
+    {
+        $this->handler->setOption(\Redis::OPT_PREFIX, '');
+        return $this->handler->subscribe($channels, $callback);
+    }
+
+    public function unsubscribe(array $channels): bool
+    {
+        $this->handler->setOption(\Redis::OPT_PREFIX, $this->prefix);
+        return $this->handler->unsubscribe($channels);
     }
 
 

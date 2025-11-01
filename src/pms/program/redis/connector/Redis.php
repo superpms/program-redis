@@ -48,6 +48,7 @@ class Redis
         if($this->config->getPrefix() !== ''){
             $redis->setOption(\Redis::OPT_PREFIX, $this->config->getPrefix());
         }
+
         foreach ($this->config->getOptions() as $key => $value) {
             $redis->setOption($key, $value);
         }
@@ -61,7 +62,7 @@ class Redis
         }
         if (class_exists($className)) {
             $class = new \ReflectionClass($className);
-            $ins = $class->newInstance($this->redis, $this->prefix);
+            $ins = $class->newInstance($this->redis);
             if(method_exists($ins, $name)){
                 return call_user_func_array([$ins, $name], $arguments);
             }
@@ -74,6 +75,9 @@ class Redis
 
 
     public function close(){
+        if($this->redis == null){
+            return;
+        }
         $this->redis->close();
         $this->redis = null;
     }
