@@ -7,27 +7,26 @@ use InvalidArgumentException;
 /**
  * @see \Redis
  * @mixin  \Redis
+ * @method \Redis getRedis() 获取当前Redis实例
+ * @method  string getPrefix() 获取Redis前缀
  * @method  bool set(string $name, $value, int $expire = 0) 设置缓存
  * @method  mixed get(string $key, $default = null) 获取缓存
  * @method  bool delete(string $key) 删除缓存
- * @method  array|false keys(string $key) 找所有符合给定模式 pattern 的 key
- * @method  array|false scan(string $key, int $length = null) 命令用于代替 keys 使用
- * @method  bool expire(string $key, int $ttl) 设置缓存过期时间
+ * @method  array|false scanX(string $key, int $length = null) 命令用于代替 keys 使用
  * @method  bool|int ttl(string $key) 返回 key 剩余的过期时间
  * @method  array|bool setnx(string $key, $value, int $expire = 0) 在指定的 key 不存在时, 为 key 设置指定的值
  * @method  bool deleteFolder(string $key) 删除文件夹下所有缓存
  * @method  void lock(string $name, int $occupy = 3, int $putup = 50) Redis分布式锁 锁定
  * @method  void unlock(string $name) Redis分布式锁 解锁
- * @method  mixed setnxDCS(string $name, \Closure $callback, $expire = null) 如果缓存存在，读取缓存，如果不存在，Redis分布式锁型创建缓存
- * @method  bool|int exists(string $key, ...$other_keys) 判断 key 是否存在
- * @method  bool|mixed lPush(string $key, ...$values) 将字符串值添加到列表的开头（左侧）。如果键不存在，则创建列表。
- * @method  bool|mixed rPush(string $key, ...$values) 将字符串值添加到列表的结尾（右侧）。如果键不存在，则创建列表。
- * @method  bool|mixed lPop(string $key) 返回并删除列表的第一个元素。
- * @method  bool|mixed rPop(string $key) 返回并删除列表的最后一个元素。
+ * @method  mixed setnxCache(string $name, \Closure $callback, $expire = null,int $retryCount=10) 如果缓存存在，读取缓存，如果不存在，Redis分布式锁型创建缓存
+ * @method  bool|mixed lPush(string $key, mixed ...$elements) 将字符串值添加到列表的开头（左侧）。如果键不存在，则创建列表。
+ * @method  bool|mixed rPush(string $key, mixed ...$elements) 将字符串值添加到列表的结尾（右侧）。如果键不存在，则创建列表。
+ * @method  bool|mixed lPop(string $key,int $count = 0) 返回并删除列表的第一个元素。
+ * @method  bool|mixed rPop(string $key,int $count = 0) 返回并删除列表的最后一个元素。
  * @method  bool|int lLen(string $key)  返回由键标识的列表的大小。如果该列表不存在或为空，则该命令返回0。如果Key标识的数据类型不是列表，则命令返回FALSE。。
  * @method  Array LRangeAll(string $key)  返回List的所有项。
- * @method  Array LRangeLength(string $key, int $end)  返回List指定个数的项。
- * @method  Array LRange(string $key,int $start, int $end)  截取 List指定位置的项。
+ * @method  Array LRangeLen(string $key, int $end)  返回List指定个数的项。
+ * @method  Array lrange(string $key,int $start, int $end)  截取 List指定位置的项。
  * @method  bool|int hSet($key, $hashKey, $value) 将值添加到存储在键处的哈希中。如果该值已经在哈希中，则返回FALSE。
  * @method  bool|int hLen($key) 返回哈希的长度（以项数为单位）。
  * @method  bool|string hGet($key, $hashKey) 返回哈希表指定行的值。
