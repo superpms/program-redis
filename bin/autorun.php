@@ -8,11 +8,11 @@ if (class_exists('\pms\hook\LifecycleHook')) {
     });
 }
 if (in_swoole()) {
-    if (class_exists('\pms\hook\SwooleHttpLifecycleHook')) {
-        \pms\hook\SwooleHttpLifecycleHook::mount(LIFECYCLE_BOOT, function () {
+    if (class_exists('\pms\hook\HttpLifecycleHook')) {
+        \pms\hook\HttpLifecycleHook::mount(LIFECYCLE_BOOT, function () {
             \pms\facade\RDb::isPool(true);
         });
-        \pms\hook\SwooleHttpLifecycleHook::mount(LIFECYCLE_SANDBOX_DESTRUCT, function () {
+        \pms\hook\HttpLifecycleHook::mount(LIFECYCLE_SANDBOX_DESTRUCT, function () {
             try {
                 prdb_pool_autoclose();
             } catch (\Throwable $e) {
