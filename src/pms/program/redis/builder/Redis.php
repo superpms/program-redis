@@ -112,7 +112,7 @@ class Redis
         $iterator = null;
         $data = [];
         while (true) {
-            $keys = $this->handler->scan($iterator, $pattern);
+            $keys = $this->handler->scan($iterator, $this->getPrefix($this->clearPrefix($pattern)));
             if ($keys === false) {
                 break;
             }
