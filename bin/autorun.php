@@ -12,7 +12,7 @@ if (in_swoole()) {
         \pms\hook\SwooleHttpLifecycleHook::mount(LIFECYCLE_BOOT, function () {
             \pms\facade\RDb::isPool(true);
         });
-        \pms\hook\SwooleHttpLifecycleHook::mount(SWOOLE_LIFECYCLE_HTTP_REQUEST_DESTRUCT, function () {
+        \pms\hook\SwooleHttpLifecycleHook::mount(LIFECYCLE_SANDBOX_DESTRUCT, function () {
             try {
                 prdb_pool_autoclose();
             } catch (\Throwable $e) {
