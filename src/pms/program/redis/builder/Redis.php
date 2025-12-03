@@ -107,7 +107,7 @@ class Redis
      * @param int|null $length
      * @return array
      */
-    public function scanX(string $pattern, int $length = null): array
+    public function scanX(string $pattern, ?int $length = null): array
     {
         $iterator = null;
         $data = [];

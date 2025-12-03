@@ -113,7 +113,7 @@ class Driver
      * @param string|null $name  连接配置标识
      * @param bool        $force 强制重新连接
      */
-    public function connect(string $name = null, bool $force = false)
+    public function connect(?string $name = null, bool $force = false)
     {
         return $this->instance($name, $force);
     }
@@ -124,7 +124,7 @@ class Driver
      * @param string|null $name  连接标识
      * @param bool        $force 强制重新连接
      */
-    protected function instance(string $name = null, bool $force = false)
+    protected function instance(?string $name = null, bool $force = false)
     {
         if (empty($name)) {
             $name = $this->getConfig('default', 'redis');
