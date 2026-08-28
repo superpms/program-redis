@@ -38,7 +38,7 @@ class Redis
         protected Closure $isolate
     )
     {
-        $this->prefix = $this->handler->getOption(handler::OPT_PREFIX);
+        $this->prefix = $this->handler->getOption(handler::OPT_PREFIX) ?? '';
     }
 
     protected function isolate(): void

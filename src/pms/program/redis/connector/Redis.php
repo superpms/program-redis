@@ -58,20 +58,50 @@ class Redis
 
     public function __call(string $name, array $arguments)
     {
-        $className = '\pms\program\redis\builder\Redis';
-        if ($this->redis == null) {
-            $this->redis = $this->connect();
-        }
-        if (class_exists($className)) {
-            $isolate = function () {
+        if (class_exists('\pms\program\redis\builder\Redis')) {
+            try {
+                return $this->dispatchCommand($name, $arguments);
+            } catch (\RedisException $e) {
+                // 命中断线特征说明当前连接已死：丢弃连接重建后重放一次本次命令，坏连接不再常驻
+                if (!$this->isBreak($e)) {
+                    throw $e;
+                }
                 $this->abandon();
-            };
-            $class = new \ReflectionClass($className);
-            $ins = $class->newInstance($this->redis,$isolate);
-            return call_user_func_array([$ins, $name], $arguments);
+                return $this->dispatchCommand($name, $arguments);
+            }
         }
         throw new \Exception('Redis ' . $name . ' 方法不存在');
 
+    }
+
+    /**
+     * 懒加载连接并在当前连接上执行一条命令。
+     */
+    protected function dispatchCommand(string $name, array $arguments)
+    {
+        if ($this->redis === null) {
+            $this->redis = $this->connect();
+        }
+        $isolate = function () {
+            $this->abandon();
+        };
+        $class = new \ReflectionClass('\pms\program\redis\builder\Redis');
+        $ins = $class->newInstance($this->redis, $isolate);
+        return call_user_func_array([$ins, $name], $arguments);
+    }
+
+    /**
+     * 判断异常是否为连接断线特征。
+     */
+    protected function isBreak(\Throwable $throwable): bool
+    {
+        $message = strtolower($throwable->getMessage());
+        foreach (['went away', 'connection lost', 'connection closed', 'error while sending', 'closed the connection'] as $flag) {
+            if (str_contains($message, $flag)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected function abandon(): void
@@ -79,9 +109,7 @@ class Redis
         if ($this->redis == null) {
             return;
         }
-        try{
-            $this->redis->close();
-        }catch (\Throwable $e){}
+        $this->redis->close();
         $this->redis = null;
     }
 
